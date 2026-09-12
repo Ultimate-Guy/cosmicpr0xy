@@ -1,1 +1,280 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080b16"><title>Cosmic Web</title><link rel="stylesheet" href="styles.css"></head><body><div class="app"><aside class="sidebar"><button class="brand" id="brandHome"><span class="logo">✦</span><span class="brand-word">COSMIC</span></button><nav class="main-nav"><button class="nav active" data-view="home"><span>⌂</span><b>Home</b></button><button class="nav" data-view="apps"><span>▦</span><b>Apps</b></button><button class="nav" data-view="favorites"><span>★</span><b>Saved</b></button><button class="nav" data-view="history"><span>◷</span><b>History</b></button><button class="nav" data-view="settings"><span>⚙</span><b>Settings</b></button></nav><div class="sidebar-bottom"><button class="panic" id="panicBtn"><span>✦</span><b>Focus</b></button><button class="collapse" id="collapseBtn">‹ Collapse</button></div></aside><main class="shell"><header class="topbar"><div class="tabs" id="tabs"></div><button class="new-tab" id="newTab" title="New tab">+</button><div class="top-actions"><button id="themeBtn">◐</button><button id="fullscreenBtn">⛶</button></div></header><div class="browserbar"><div class="nav-buttons"><button id="backBtn">←</button><button id="forwardBtn">→</button><button id="reloadBtn">↻</button><button id="homeBtn">⌂</button></div><form id="addressForm" class="address"><span class="address-lock">◈</span><input id="addressBar" autocomplete="off" spellcheck="false" placeholder="Search or enter a web address…"><button type="button" id="clearBtn">×</button></form><button id="favoriteBtn" class="bar-action">☆</button><button id="openBtn" class="bar-action">↗</button></div><div class="content-wrap"><section id="homeView" class="view active-view"><div class="hero"><div class="stars"></div><div class="hero-content"><div class="hero-mark">✦</div><p class="eyebrow">COSMIC WEB</p><h1>Welcome back.<br><em>Explore freely.</em></h1><p class="hero-copy">A fast, lightweight Cosmic browser workspace with tabs, apps, saved pages, history and a clean space-inspired interface.</p><form id="homeSearch" class="home-search"><span>⌕</span><input id="homeInput" placeholder="Search or enter a web address…"><button>Go</button></form></div></div><div class="section-head"><div><p class="eyebrow">QUICK ACCESS</p><h2>Launch an app</h2></div><button class="subtle-btn" id="addShortcut">+ Add</button></div><div id="shortcuts" class="card-grid"></div><div class="feature-row"><div class="feature-card"><span class="feature-icon">⚡</span><div><strong>Fast workspace</strong><p>Tabs and navigation stay one click away.</p></div></div><div class="feature-card"><span class="feature-icon">★</span><div><strong>Saved space</strong><p>Keep favorite pages and shortcuts close.</p></div></div><div class="feature-card"><span class="feature-icon">✦</span><div><strong>Cosmic design</strong><p>Dark glass, stars and compact controls.</p></div></div></div></section><section id="pageView" class="view page-view" hidden><div id="loading" class="loading"><div class="spinner"></div><strong>Loading page</strong><span id="loadingText">Preparing the Cosmic viewport…</span></div><iframe id="pageFrame" title="Cosmic web viewport" allow="fullscreen; autoplay; picture-in-picture; clipboard-read; clipboard-write" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe><div id="embedFallback" class="fallback" hidden><div class="fallback-icon">↗</div><p class="eyebrow">COSMIC WEB</p><h2>This destination can't be embedded</h2><p>Some websites block embedded views. You can open this destination normally instead.</p><button id="fallbackOpen">Open normally</button></div></section><section id="appsView" class="view subview" hidden><p class="eyebrow">COSMIC</p><h1>Apps</h1><p class="muted">Your quick web apps and shortcuts.</p><div id="appsGrid" class="card-grid"></div></section><section id="favoritesView" class="view subview" hidden><p class="eyebrow">YOUR SPACE</p><h1>Saved</h1><p class="muted">Pages you choose to keep close.</p><div id="favoritesGrid" class="card-grid"></div></section><section id="historyView" class="view subview" hidden><p class="eyebrow">BROWSER</p><h1>History</h1><div id="historyList" class="history-list"><p class="muted">No pages visited yet.</p></div></section><section id="settingsView" class="view subview" hidden><p class="eyebrow">COSMIC WEB</p><h1>Settings</h1><div class="settings-grid"><label>Start page<select id="homepageMode"><option value="cosmic">Cosmic home</option><option value="blank">Blank page</option></select></label><label>Theme<select id="themeMode"><option value="dark">Cosmic Dark</option><option value="light">Cosmic Light</option></select></label><label>Sidebar<select id="sidebarMode"><option value="expanded">Expanded</option><option value="compact">Compact</option></select></label></div></section></div><footer><span id="status">Ready</span><span>Cosmic Web</span></footer></main></div><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080b16" />
+    <meta name="description" content="Cosmic — a fast, lightweight web workspace with tabs, apps, saved pages and history." />
+    <title>Cosmic</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23141c3a'/%3E%3Cpath d='M16 5l2.6 8.4L27 16l-8.4 2.6L16 27l-2.6-8.4L5 16l8.4-2.6z' fill='%238ea2ff'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-theme="dark">
+    <div class="app" id="app">
+      <aside class="sidebar" id="sidebar" aria-label="Cosmic navigation">
+        <button class="brand" id="brandHome" type="button" title="Cosmic home" aria-label="Cosmic home">
+          <span class="logo" aria-hidden="true">✦</span>
+          <span class="brand-word">COSMIC</span>
+        </button>
+        <nav class="main-nav" aria-label="Sections">
+          <button class="nav" type="button" data-view="home" data-tip="Home" aria-current="page">
+            <span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span>
+          </button>
+          <button class="nav" type="button" data-view="apps" data-tip="Apps">
+            <span class="nav-icon" aria-hidden="true">▦</span><span class="nav-label">Apps</span>
+          </button>
+          <button class="nav" type="button" data-view="saved" data-tip="Saved">
+            <span class="nav-icon" aria-hidden="true">★</span><span class="nav-label">Saved</span>
+          </button>
+          <button class="nav" type="button" data-view="history" data-tip="History">
+            <span class="nav-icon" aria-hidden="true">◷</span><span class="nav-label">History</span>
+          </button>
+          <button class="nav" type="button" data-view="settings" data-tip="Settings">
+            <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Settings</span>
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <button class="nav" type="button" id="focusBtn" data-tip="Focus mode" aria-pressed="false">
+            <span class="nav-icon" aria-hidden="true">◎</span><span class="nav-label">Focus</span>
+          </button>
+          <button class="nav collapse" type="button" id="collapseBtn" data-tip="Expand sidebar" aria-expanded="true">
+            <span class="nav-icon" aria-hidden="true">‹</span><span class="nav-label">Collapse</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="shell">
+        <header class="topbar">
+          <div class="tabs" id="tabs" role="tablist" aria-label="Open tabs"></div>
+          <button class="icon-btn new-tab" id="newTab" type="button" title="New tab (Alt+T)" aria-label="New tab">+</button>
+          <div class="top-actions">
+            <button class="icon-btn" id="themeBtn" type="button" title="Toggle theme" aria-label="Toggle theme">◐</button>
+            <button class="icon-btn" id="fullscreenBtn" type="button" title="Fullscreen" aria-label="Toggle fullscreen">⛶</button>
+          </div>
+        </header>
+
+        <div class="browserbar">
+          <div class="nav-buttons">
+            <button class="icon-btn" id="backBtn" type="button" title="Back" aria-label="Back">←</button>
+            <button class="icon-btn" id="forwardBtn" type="button" title="Forward" aria-label="Forward">→</button>
+            <button class="icon-btn" id="reloadBtn" type="button" title="Reload" aria-label="Reload">↻</button>
+            <button class="icon-btn" id="homeBtn" type="button" title="Cosmic new tab" aria-label="Home">⌂</button>
+          </div>
+          <form id="addressForm" class="address" role="search">
+            <span class="address-lock" id="addressIcon" aria-hidden="true">◈</span>
+            <label for="addressBar" class="sr-only">Search or enter a web address</label>
+            <input
+              id="addressBar"
+              type="text"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="Search or enter a web address…"
+            />
+            <button type="button" class="address-clear" id="clearBtn" title="Clear" aria-label="Clear address">×</button>
+          </form>
+          <button class="icon-btn" id="favoriteBtn" type="button" title="Save page" aria-label="Save page" aria-pressed="false">☆</button>
+          <button class="icon-btn" id="openBtn" type="button" title="Open in new window" aria-label="Open in new window">↗</button>
+          <div class="progress" id="progress" hidden aria-hidden="true"></div>
+        </div>
+
+        <div class="content" id="content">
+          <!-- New tab page -->
+          <section class="view" id="homeView" data-view="home">
+            <div class="ntp">
+              <div class="stars" aria-hidden="true"></div>
+              <div class="ntp-head">
+                <div class="ntp-brand">
+                  <span class="logo lg" aria-hidden="true">✦</span>
+                  <div>
+                    <p class="eyebrow">COSMIC</p>
+                    <h1 class="ntp-title" id="greeting">Welcome back.</h1>
+                  </div>
+                </div>
+                <div class="ntp-clock" id="clock">
+                  <time class="clock-time" id="clockTime">--:--</time>
+                  <span class="clock-date" id="clockDate"></span>
+                </div>
+              </div>
+              <form id="homeSearch" class="home-search" role="search">
+                <span aria-hidden="true">⌕</span>
+                <label for="homeInput" class="sr-only">Search or enter a web address</label>
+                <input id="homeInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search the web or type an address" />
+                <button type="submit" class="primary-btn">Go</button>
+              </form>
+              <div class="ntp-status" id="ntpStatus"></div>
+            </div>
+
+            <div class="section-head">
+              <h2>Quick access</h2>
+              <div class="section-actions">
+                <button class="subtle-btn" type="button" data-action="add-shortcut">+ Add app</button>
+                <button class="subtle-btn" type="button" data-view-link="apps">All apps</button>
+              </div>
+            </div>
+            <div id="homeShortcuts" class="card-grid compact"></div>
+
+            <div class="ntp-columns">
+              <div>
+                <div class="section-head">
+                  <h2>Recent</h2>
+                  <button class="subtle-btn" type="button" data-view-link="history">History</button>
+                </div>
+                <div id="homeRecent" class="list"></div>
+              </div>
+              <div>
+                <div class="section-head">
+                  <h2>Saved</h2>
+                  <button class="subtle-btn" type="button" data-view-link="saved">All saved</button>
+                </div>
+                <div id="homeSaved" class="list"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Web viewport (runtime mounts one viewport per tab here) -->
+          <section class="view page-view" id="pageView" data-view="page" hidden>
+            <div id="viewports" class="viewports"></div>
+            <div class="overlay loading" id="loading" hidden>
+              <div class="spinner" aria-hidden="true"></div>
+              <strong>Loading</strong>
+              <span id="loadingText"></span>
+            </div>
+            <div class="overlay fallback" id="fallback" hidden role="alert">
+              <div class="fallback-icon" aria-hidden="true">⚠</div>
+              <p class="eyebrow">COSMIC</p>
+              <h2 id="fallbackTitle">This page can’t be shown</h2>
+              <p id="fallbackText"></p>
+              <div class="btn-row">
+                <button class="primary-btn" type="button" id="fallbackOpen">Open in new window</button>
+                <button class="subtle-btn" type="button" id="fallbackRetry">Retry</button>
+                <button class="subtle-btn" type="button" id="fallbackHome">Back to Cosmic</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Apps -->
+          <section class="view panel" id="appsView" data-view="apps" hidden>
+            <header class="panel-head">
+              <div>
+                <p class="eyebrow">COSMIC</p>
+                <h1>Apps</h1>
+                <p class="muted">Launch, add and arrange your quick-access apps. Drag cards to reorder.</p>
+              </div>
+              <div class="section-actions">
+                <button class="subtle-btn" type="button" id="resetShortcuts">Reset defaults</button>
+                <button class="primary-btn" type="button" data-action="add-shortcut">+ Add app</button>
+              </div>
+            </header>
+            <div id="appsGrid" class="card-grid editable"></div>
+          </section>
+
+          <!-- Saved -->
+          <section class="view panel" id="savedView" data-view="saved" hidden>
+            <header class="panel-head">
+              <div>
+                <p class="eyebrow">YOUR SPACE</p>
+                <h1>Saved</h1>
+                <p class="muted">Pages you chose to keep close. Use ☆ in the toolbar to save the current page.</p>
+              </div>
+              <button class="subtle-btn danger" type="button" id="clearSaved">Clear all</button>
+            </header>
+            <div id="savedList" class="list"></div>
+          </section>
+
+          <!-- History -->
+          <section class="view panel" id="historyView" data-view="history" hidden>
+            <header class="panel-head">
+              <div>
+                <p class="eyebrow">BROWSER</p>
+                <h1>History</h1>
+                <p class="muted">Recently visited pages, newest first.</p>
+              </div>
+              <button class="subtle-btn danger" type="button" id="clearHistory">Clear history</button>
+            </header>
+            <div id="historyList" class="list grouped"></div>
+          </section>
+
+          <!-- Settings -->
+          <section class="view panel" id="settingsView" data-view="settings" hidden>
+            <header class="panel-head">
+              <div>
+                <p class="eyebrow">COSMIC</p>
+                <h1>Settings</h1>
+                <p class="muted">Preferences are stored on this device.</p>
+              </div>
+            </header>
+            <div class="settings">
+              <fieldset class="setting">
+                <legend>Appearance</legend>
+                <div class="choice-row" role="radiogroup" aria-label="Theme">
+                  <label class="choice"><input type="radio" name="theme" value="dark" /><span><span class="swatch dark"></span>Cosmic Dark</span></label>
+                  <label class="choice"><input type="radio" name="theme" value="light" /><span><span class="swatch light"></span>Cosmic Light</span></label>
+                </div>
+                <label class="toggle"><input type="checkbox" id="clockToggle" /><span>Show clock on the new-tab page</span></label>
+              </fieldset>
+              <fieldset class="setting">
+                <legend>Sidebar</legend>
+                <div class="choice-row" role="radiogroup" aria-label="Sidebar">
+                  <label class="choice"><input type="radio" name="sidebar" value="expanded" /><span>Expanded</span></label>
+                  <label class="choice"><input type="radio" name="sidebar" value="compact" /><span>Compact</span></label>
+                </div>
+              </fieldset>
+              <fieldset class="setting">
+                <legend>Startup</legend>
+                <div class="choice-row" role="radiogroup" aria-label="Startup page">
+                  <label class="choice"><input type="radio" name="startup" value="cosmic" /><span>Cosmic new tab</span></label>
+                  <label class="choice"><input type="radio" name="startup" value="blank" /><span>Blank</span></label>
+                </div>
+              </fieldset>
+              <fieldset class="setting">
+                <legend>Browser data</legend>
+                <div class="btn-row">
+                  <button class="subtle-btn" type="button" id="settingsClearHistory">Clear history</button>
+                  <button class="subtle-btn" type="button" id="settingsClearSaved">Clear saved pages</button>
+                  <button class="subtle-btn danger" type="button" id="resetSettings">Reset Cosmic settings</button>
+                </div>
+              </fieldset>
+              <fieldset class="setting">
+                <legend>Runtime</legend>
+                <dl class="kv">
+                  <dt>Adapter</dt><dd id="runtimeName"></dd>
+                  <dt>Storage</dt><dd id="storageState"></dd>
+                  <dt>Version</dt><dd>Cosmic 2.0</dd>
+                </dl>
+                <p class="muted">The UI talks to a runtime adapter; see README for connecting your own web runtime.</p>
+              </fieldset>
+            </div>
+          </section>
+        </div>
+
+        <footer class="statusbar">
+          <span id="status" role="status" aria-live="polite">Ready</span>
+          <span class="status-right"><span id="tabCount"></span><span aria-hidden="true">·</span><span>Cosmic</span></span>
+        </footer>
+      </main>
+    </div>
+
+    <dialog id="shortcutDialog" class="dialog">
+      <form method="dialog" id="shortcutForm">
+        <p class="eyebrow">APPS</p>
+        <h2>Add app</h2>
+        <label>Name<input name="name" type="text" required maxlength="40" placeholder="My app" /></label>
+        <label>Address<input name="url" type="text" required placeholder="example.com" inputmode="url" /></label>
+        <div class="dialog-row">
+          <label>Icon<input name="icon" type="text" maxlength="2" placeholder="✦" /></label>
+          <label>Description<input name="description" type="text" maxlength="40" placeholder="Optional" /></label>
+        </div>
+        <p class="form-error" id="shortcutError" hidden></p>
+        <div class="btn-row end">
+          <button class="subtle-btn" type="button" id="shortcutCancel">Cancel</button>
+          <button class="primary-btn" type="submit">Add</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" hidden role="status"></div>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
