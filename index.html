@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070914">
+  <title>Cosmic Proxy Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <button class="brand" id="brandHome" aria-label="Cosmic home"><span class="logo">✦</span><span>Cosmic</span><b>WEB</b></button>
+      <div class="top-actions"><button id="themeBtn" title="Toggle appearance">◐</button><button id="fullscreenBtn" title="Fullscreen">⛶</button></div>
+    </header>
+
+    <div class="browserbar">
+      <div class="nav-buttons"><button id="backBtn">←</button><button id="forwardBtn">→</button><button id="reloadBtn">↻</button></div>
+      <form id="addressForm" class="address"><span>⌕</span><input id="addressBar" autocomplete="off" spellcheck="false" placeholder="Search or enter a web address…"><button type="button" id="clearBtn">×</button></form>
+      <button id="openBtn" class="open-btn" title="Open destination">↗</button>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <nav>
+          <button class="nav active" data-view="home"><i>⌂</i><span>Home</span></button>
+          <button class="nav" data-view="apps"><i>▦</i><span>Apps</span></button>
+          <button class="nav" data-view="history"><i>◷</i><span>History</span></button>
+        </nav>
+        <div class="sidebar-bottom"><button class="nav" data-view="settings"><i>⚙</i><span>Settings</span></button></div>
+      </aside>
+
+      <main class="content">
+        <section id="homeView" class="view active-view">
+          <div class="hero-card">
+            <div class="hero-glow"></div>
+            <div class="hero-logo">✦</div>
+            <p class="kicker">COSMIC WEB LAB</p>
+            <h1>A cleaner way to explore.</h1>
+            <p>Fast, modular browser infrastructure built to drop into Cosmic when you're ready.</p>
+            <form id="homeSearch" class="home-search"><input id="homeInput" placeholder="Search or enter a web address…" autocomplete="off"><button>Explore</button></form>
+          </div>
+          <div class="section-head"><div><span class="kicker">QUICK ACCESS</span><h2>Launch something</h2></div><button id="addShortcut">+ Add</button></div>
+          <div id="shortcuts" class="shortcut-grid"></div>
+          <div class="architecture-card"><div><span class="pill">READY TO PLUG IN</span><h3>Runtime adapter architecture</h3><p>The UI, navigation state, history, and page viewport are separated from the transport layer. A future Cosmic-controlled runtime can be connected without rebuilding the interface.</p></div><div class="layers"><span>UI</span><span>Navigation</span><span>Runtime adapter</span><span>Viewport</span></div></div>
+        </section>
+
+        <section id="pageView" class="view page-view" hidden>
+          <div id="loading" class="loading"><span></span><span></span><span></span><p>Preparing page…</p></div>
+          <iframe id="pageFrame" title="Cosmic web viewport" allow="fullscreen; autoplay; picture-in-picture; clipboard-read; clipboard-write" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe>
+          <div id="embedFallback" class="fallback" hidden><div class="fallback-icon">↗</div><h2>This destination can't be embedded</h2><p>Some sites prevent being displayed inside another page. You can open the destination normally instead.</p><button id="fallbackOpen">Open normally</button></div>
+        </section>
+
+        <section id="appsView" class="view" hidden><span class="kicker">COSMIC</span><h1>Apps</h1><p class="muted">Shortcuts you add here can later become Cosmic app cards.</p><div id="appsGrid" class="shortcut-grid"></div></section>
+        <section id="historyView" class="view" hidden><span class="kicker">BROWSER</span><h1>History</h1><div id="historyList" class="history-list"><p class="muted">No pages visited yet.</p></div></section>
+        <section id="settingsView" class="view" hidden><span class="kicker">COSMIC WEB</span><h1>Settings</h1><div class="settings-grid"><label>Homepage<select id="homepageMode"><option value="cosmic">Cosmic start page</option><option value="blank">Blank page</option></select></label><label>Open destinations<select id="openMode"><option value="frame">Inside Cosmic</option><option value="new">New browser tab</option></select></label></div></section>
+      </main>
+    </div>
+    <footer><span id="status">Ready</span><span>Cosmic Browser Foundation</span></footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
