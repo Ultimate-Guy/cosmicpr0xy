@@ -1,94 +1,15 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#070914">
-  <title>Cosmic Web</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="app">
-    <aside class="sidebar">
-      <button class="brand" id="brandHome" aria-label="Cosmic home"><span class="logo">✦</span><span class="brand-word">COSMIC</span></button>
-      <nav class="main-nav" aria-label="Cosmic navigation">
-        <button class="nav active" data-view="home"><span>⌂</span><b>Home</b></button>
-        <button class="nav" data-view="apps"><span>▦</span><b>Apps</b></button>
-        <button class="nav" data-view="favorites"><span>★</span><b>Saved</b></button>
-        <button class="nav" data-view="history"><span>◷</span><b>History</b></button>
-      </nav>
-      <div class="sidebar-bottom">
-        <button class="nav" data-view="settings"><span>⚙</span><b>Settings</b></button>
-        <button class="collapse" id="collapseBtn" title="Collapse sidebar">‹</button>
-      </div>
-    </aside>
-
-    <main class="shell">
-      <header class="topbar">
-        <div class="tabs" id="tabs">
-          <button class="tab active" data-tab="home"><span>✦</span><b>New tab</b><i>×</i></button>
-          <button class="new-tab" id="newTab" title="New tab">+</button>
-        </div>
-        <div class="top-actions">
-          <button id="themeBtn" title="Toggle theme">◐</button>
-          <button id="fullscreenBtn" title="Fullscreen">⛶</button>
-        </div>
-      </header>
-
-      <div class="browserbar">
-        <div class="nav-buttons">
-          <button id="backBtn" title="Back">←</button>
-          <button id="forwardBtn" title="Forward">→</button>
-          <button id="reloadBtn" title="Reload">↻</button>
-          <button id="homeBtn" title="Home">⌂</button>
-        </div>
-        <form id="addressForm" class="address">
-          <span class="address-lock">◈</span>
-          <input id="addressBar" autocomplete="off" spellcheck="false" placeholder="Search or enter a web address…">
-          <button type="button" id="clearBtn" aria-label="Clear">×</button>
-        </form>
-        <button id="favoriteBtn" class="bar-action" title="Save page">☆</button>
-        <button id="openBtn" class="bar-action" title="Open in browser">↗</button>
-      </div>
-
-      <div class="content-wrap">
-        <section id="homeView" class="view active-view">
-          <div class="hero">
-            <div class="stars"></div>
-            <div class="hero-content">
-              <div class="hero-mark">✦</div>
-              <p class="eyebrow">COSMIC WEB</p>
-              <h1>Explore the web.<br><em>Your way.</em></h1>
-              <p class="hero-copy">A lightweight web workspace designed to become a native part of Cosmic.</p>
-              <form id="homeSearch" class="home-search"><span>⌕</span><input id="homeInput" placeholder="Search or enter a web address…" autocomplete="off"><button>Go</button></form>
-            </div>
-          </div>
-
-          <div class="section-head"><div><p class="eyebrow">QUICK ACCESS</p><h2>Launch an app</h2></div><button class="subtle-btn" id="addShortcut">+ Add</button></div>
-          <div id="shortcuts" class="card-grid"></div>
-
-          <div class="feature-row">
-            <div class="feature-card"><span class="feature-icon">⚡</span><div><strong>Lightweight</strong><p>Small static frontend with local browser state.</p></div></div>
-            <div class="feature-card"><span class="feature-icon">◈</span><div><strong>Modular</strong><p>UI and navigation stay separate from the page transport layer.</p></div></div>
-            <div class="feature-card"><span class="feature-icon">✦</span><div><strong>Cosmic-ready</strong><p>Designed so it can slot into Cosmic without rebuilding the UI.</p></div></div>
-          </div>
-        </section>
-
-        <section id="pageView" class="view page-view" hidden>
-          <div id="loading" class="loading"><div class="spinner"></div><strong>Loading page</strong><span id="loadingText">Preparing the Cosmic viewport…</span></div>
-          <iframe id="pageFrame" title="Cosmic web viewport" allow="fullscreen; autoplay; picture-in-picture; clipboard-read; clipboard-write" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe>
-          <div id="embedFallback" class="fallback" hidden><div class="fallback-icon">↗</div><p class="eyebrow">COSMIC WEB</p><h2>This destination can't be embedded</h2><p>Some websites block embedded views. You can open this destination normally instead.</p><button id="fallbackOpen">Open normally</button></div>
-        </section>
-
-        <section id="appsView" class="view subview" hidden><p class="eyebrow">COSMIC</p><h1>Apps</h1><p class="muted">Your web shortcuts, ready to become Cosmic app cards.</p><div id="appsGrid" class="card-grid"></div></section>
-        <section id="favoritesView" class="view subview" hidden><p class="eyebrow">YOUR SPACE</p><h1>Saved</h1><p class="muted">Pages you choose to keep close.</p><div id="favoritesGrid" class="card-grid"></div></section>
-        <section id="historyView" class="view subview" hidden><p class="eyebrow">BROWSER</p><h1>History</h1><div id="historyList" class="history-list"><p class="muted">No pages visited yet.</p></div></section>
-        <section id="settingsView" class="view subview" hidden><p class="eyebrow">COSMIC WEB</p><h1>Settings</h1><div class="settings-grid"><label>Start page<select id="homepageMode"><option value="cosmic">Cosmic home</option><option value="blank">Blank page</option></select></label><label>Theme<select id="themeMode"><option value="dark">Cosmic Dark</option><option value="light">Cosmic Light</option></select></label><label>Sidebar<select id="sidebarMode"><option value="expanded">Expanded</option><option value="compact">Compact</option></select></label></div></section>
-      </div>
-
-      <footer><span id="status">Ready</span><span>Cosmic Web Foundation</span></footer>
-    </main>
-  </div>
-  <script src="script.js"></script>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#070914"><title>Cosmic Web</title><link rel="stylesheet" href="styles.css"></head>
+<body><div class="app">
+<aside class="sidebar"><button class="brand" id="brandHome"><span class="logo">✦</span><span class="brand-word">COSMIC</span></button><nav class="main-nav"><button class="nav active" data-view="home"><span>⌂</span><b>Home</b></button><button class="nav" data-view="apps"><span>▦</span><b>Apps</b></button><button class="nav" data-view="favorites"><span>★</span><b>Saved</b></button><button class="nav" data-view="history"><span>◷</span><b>History</b></button></nav><div class="sidebar-bottom"><button class="nav" data-view="settings"><span>⚙</span><b>Settings</b></button><button class="collapse" id="collapseBtn">‹</button></div></aside>
+<main class="shell"><header class="topbar"><div class="tabs"><button class="tab active"><span>✦</span><b>New tab</b><i>×</i></button><button class="new-tab" id="newTab">+</button></div><div class="top-actions"><button id="themeBtn">◐</button><button id="fullscreenBtn">⛶</button></div></header>
+<div class="browserbar"><div class="nav-buttons"><button id="backBtn">←</button><button id="forwardBtn">→</button><button id="reloadBtn">↻</button><button id="homeBtn">⌂</button></div><form id="addressForm" class="address"><span class="address-lock">◈</span><input id="addressBar" autocomplete="off" spellcheck="false" placeholder="Search or enter a web address…"><button type="button" id="clearBtn">×</button></form><button id="favoriteBtn" class="bar-action">☆</button><button id="openBtn" class="bar-action">↗</button></div>
+<div class="content-wrap">
+<section id="homeView" class="view active-view"><div class="hero"><div class="stars"></div><div class="hero-content"><div class="hero-mark">✦</div><p class="eyebrow">COSMIC WEB</p><h1>Explore the web.<br><em>Your way.</em></h1><p class="hero-copy">A lightweight browser foundation with a proxy-ready architecture for Cosmic.</p><form id="homeSearch" class="home-search"><span>⌕</span><input id="homeInput" placeholder="Search or enter a web address…"><button>Go</button></form></div></div>
+<div class="section-head"><div><p class="eyebrow">QUICK ACCESS</p><h2>Launch an app</h2></div><button class="subtle-btn" id="addShortcut">+ Add</button></div><div id="shortcuts" class="card-grid"></div>
+<div class="proxy-panel"><div><p class="eyebrow">WEB RUNTIME</p><h2>Cosmic proxy foundation</h2><p class="muted">The interface is ready for a runtime you control. The transport and rewriting engine stay isolated from the Cosmic UI.</p></div><div class="runtime-grid"><div><span class="dot"></span><b>Viewport</b><small>Ready</small></div><div><span class="dot"></span><b>Navigation</b><small>Ready</small></div><div><span class="dot"></span><b>Runtime adapter</b><small>Plug-in point</small></div></div></div>
+<div class="feature-row"><div class="feature-card"><span class="feature-icon">⚡</span><div><strong>Lightweight</strong><p>Small frontend with local state.</p></div></div><div class="feature-card"><span class="feature-icon">◈</span><div><strong>Modular</strong><p>UI and transport stay separate.</p></div></div><div class="feature-card"><span class="feature-icon">✦</span><div><strong>Cosmic-ready</strong><p>Designed to plug into Cosmic later.</p></div></div></div></section>
+<section id="pageView" class="view page-view" hidden><div id="loading" class="loading"><div class="spinner"></div><strong>Loading page</strong><span id="loadingText">Preparing the Cosmic viewport…</span></div><iframe id="pageFrame" title="Cosmic web viewport" allow="fullscreen; autoplay; picture-in-picture; clipboard-read; clipboard-write" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe><div id="embedFallback" class="fallback" hidden><div class="fallback-icon">↗</div><p class="eyebrow">COSMIC WEB</p><h2>This destination can't be embedded</h2><p>Some websites block embedded views. You can open this destination normally instead.</p><button id="fallbackOpen">Open normally</button></div></section>
+<section id="appsView" class="view subview" hidden><p class="eyebrow">COSMIC</p><h1>Apps</h1><p class="muted">Web shortcuts ready to become Cosmic app cards.</p><div id="appsGrid" class="card-grid"></div></section><section id="favoritesView" class="view subview" hidden><p class="eyebrow">YOUR SPACE</p><h1>Saved</h1><p class="muted">Pages you choose to keep close.</p><div id="favoritesGrid" class="card-grid"></div></section><section id="historyView" class="view subview" hidden><p class="eyebrow">BROWSER</p><h1>History</h1><div id="historyList" class="history-list"><p class="muted">No pages visited yet.</p></div></section>
+<section id="settingsView" class="view subview" hidden><p class="eyebrow">COSMIC WEB</p><h1>Settings</h1><div class="settings-grid"><label>Start page<select id="homepageMode"><option value="cosmic">Cosmic home</option><option value="blank">Blank page</option></select></label><label>Theme<select id="themeMode"><option value="dark">Cosmic Dark</option><option value="light">Cosmic Light</option></select></label><label>Sidebar<select id="sidebarMode"><option value="expanded">Expanded</option><option value="compact">Compact</option></select></label></div><div class="runtime-info"><p class="eyebrow">RUNTIME STATUS</p><h3>Adapter slot</h3><p class="muted">No external proxy engine is bundled here yet. A future Cosmic-controlled runtime can implement the adapter without changing this interface.</p></div></section>
+</div><footer><span id="status">Ready</span><span>Cosmic Web Foundation</span></footer></main></div><script src="script.js"></script></body></html>
