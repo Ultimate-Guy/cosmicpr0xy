@@ -11,7 +11,17 @@ npm start          # http://localhost:8080  (PORT / HOST env to change)
 
 `server/index.js` serves the site, the Ultraviolet/Scramjet/BareMux/Epoxy assets, the service worker, and a [Wisp](https://github.com/MercuryWorkshop/wisp-protocol) relay at `ws://<host>/wisp/`. Node 20+.
 
-UI only (no proxy runtimes): the front end is still a static site, so `python3 -m http.server 8080` works — only the *Direct embed* runtime will be available.
+UI only (no proxy runtimes): the front end is still a static site, so `python3 -m http.server 8080` or GitHub Pages works — Cosmic detects that no server is behind the page, shows a notice in Settings, and falls back to the *Direct embed* runtime.
+
+## Deploy
+
+The proxy runtimes need the Node server (for the runtime assets and the Wisp relay), so a static host is not enough. Any Node host that runs `npm start` and supports WebSockets works:
+
+- **Render**: connect the GitHub repo; `render.yaml` in the root sets it up as a Node web service (free plan, `npm ci` + `npm start`). Render's free instances sleep when idle, so the first request after a while is slow.
+- Railway / Fly.io / Koyeb / a VPS: same two commands. Set `PORT` if the platform does not.
+- Cloudflare (DNS/proxy) can sit in front of that host; enable WebSockets. Cloudflare Pages/Workers alone cannot run the relay.
+
+Environment variables: `PORT`, `HOST`, `WISP_DNS_ORDER` (`ipv4first` default), `WISP_STREAMS_TOTAL`, `WISP_ALLOW_HOSTS` (comma-separated regex allowlist of destination hosts).
 
 ## Layout
 

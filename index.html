@@ -14,7 +14,10 @@
       <aside class="sidebar" id="sidebar" aria-label="Cosmic navigation">
         <button class="brand" id="brandHome" type="button" title="Cosmic home" aria-label="Cosmic home">
           <span class="logo" aria-hidden="true">✦</span>
-          <span class="brand-word">COSMIC</span>
+          <span class="brand-text"><span class="brand-word">cosmic</span><span class="brand-sub">web workspace</span></span>
+        </button>
+        <button class="nav new-tab-nav" type="button" id="sideNewTab" data-tip="New tab">
+          <span class="nav-icon" aria-hidden="true">+</span><span class="nav-label">New tab</span>
         </button>
         <nav class="main-nav" aria-label="Sections">
           <button class="nav" type="button" data-view="home" data-tip="Home" aria-current="page">
@@ -83,36 +86,35 @@
           <section class="view" id="homeView" data-view="home">
             <div class="ntp">
               <div class="stars" aria-hidden="true"></div>
-              <div class="ntp-head">
-                <div class="ntp-brand">
-                  <span class="logo lg" aria-hidden="true">✦</span>
-                  <div>
-                    <p class="eyebrow">COSMIC</p>
-                    <h1 class="ntp-title" id="greeting">Welcome back.</h1>
-                  </div>
-                </div>
-                <div class="ntp-clock" id="clock">
-                  <time class="clock-time" id="clockTime">--:--</time>
-                  <span class="clock-date" id="clockDate"></span>
-                </div>
+              <div class="ntp-clock" id="clock">
+                <time class="clock-time" id="clockTime">--:--</time>
+                <span class="clock-date" id="clockDate"></span>
+              </div>
+              <div class="ntp-hero">
+                <span class="logo hero" aria-hidden="true">✦</span>
+                <h1 class="ntp-title">cosmic</h1>
+                <p class="ntp-tagline" id="greeting">Welcome back.</p>
               </div>
               <form id="homeSearch" class="home-search" role="search">
-                <span aria-hidden="true">⌕</span>
+                <label for="engineSelect" class="sr-only">Search engine</label>
+                <select id="engineSelect" class="engine-select" title="Search engine">
+                  <option value="duckduckgo">DuckDuckGo</option>
+                  <option value="google">Google</option>
+                  <option value="bing">Bing</option>
+                  <option value="brave">Brave</option>
+                </select>
                 <label for="homeInput" class="sr-only">Search or enter a web address</label>
-                <input id="homeInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search the web or type an address" />
-                <button type="submit" class="primary-btn">Go</button>
+                <input id="homeInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search or type a URL" />
+                <button type="submit" class="search-go" title="Go" aria-label="Go">→</button>
               </form>
+              <div id="homeShortcuts" class="tile-row"></div>
+              <div class="ntp-links">
+                <button class="link-btn" type="button" data-action="add-shortcut">+ Add app</button>
+                <button class="link-btn" type="button" data-view-link="apps">All apps</button>
+                <button class="link-btn" type="button" data-view-link="settings">Settings</button>
+              </div>
               <div class="ntp-status" id="ntpStatus"></div>
             </div>
-
-            <div class="section-head">
-              <h2>Quick access</h2>
-              <div class="section-actions">
-                <button class="subtle-btn" type="button" data-action="add-shortcut">+ Add app</button>
-                <button class="subtle-btn" type="button" data-view-link="apps">All apps</button>
-              </div>
-            </div>
-            <div id="homeShortcuts" class="card-grid compact"></div>
 
             <div class="ntp-columns">
               <div>
@@ -228,6 +230,15 @@
                 </div>
               </fieldset>
               <fieldset class="setting">
+                <legend>Search</legend>
+                <div class="choice-row" role="radiogroup" aria-label="Search engine">
+                  <label class="choice"><input type="radio" name="engine" value="duckduckgo" /><span>DuckDuckGo</span></label>
+                  <label class="choice"><input type="radio" name="engine" value="google" /><span>Google</span></label>
+                  <label class="choice"><input type="radio" name="engine" value="bing" /><span>Bing</span></label>
+                  <label class="choice"><input type="radio" name="engine" value="brave" /><span>Brave</span></label>
+                </div>
+              </fieldset>
+              <fieldset class="setting">
                 <legend>Browser data</legend>
                 <div class="btn-row">
                   <button class="subtle-btn" type="button" id="settingsClearHistory">Clear history</button>
@@ -237,6 +248,10 @@
               </fieldset>
               <fieldset class="setting wide">
                 <legend>Web runtime</legend>
+                <div class="notice" id="serverNotice" hidden role="note">
+                  <span class="notice-icon" aria-hidden="true">⚠</span>
+                  <span id="serverNoticeText"></span>
+                </div>
                 <div class="choice-row" role="radiogroup" aria-label="Web runtime">
                   <label class="choice"><input type="radio" name="runtime" value="iframe" /><span>Direct embed</span></label>
                   <label class="choice"><input type="radio" name="runtime" value="ultraviolet" /><span>Ultraviolet</span></label>

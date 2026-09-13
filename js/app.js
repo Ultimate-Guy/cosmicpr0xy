@@ -1,9 +1,9 @@
 import { storage } from './storage.js';
 import { createStore } from './store.js';
 import { createRuntime } from './runtime.js';
-import { registerProxyRuntimes, connectTransport, defaultWispUrl, proxySupported } from './runtime-proxy.js';
+import { registerProxyRuntimes, connectTransport, defaultWispUrl, proxySupported, probeServer } from './runtime-proxy.js';
 import { createTabManager, TAB_STATUS } from './tabs.js';
-import { createNavigationManager, resolveInput, hostOf, displayUrl } from './navigation.js';
+import { createNavigationManager, resolveInput, isSearchUrl, hostOf, displayUrl, SEARCH_ENGINES } from './navigation.js';
 import { esc, formatTime, dayLabel, emptyState, appCard, listRow, tabButton } from './render.js';
 
 const $ = (id) => document.getElementById(id);
@@ -19,6 +19,8 @@ const RUNTIME_HINTS = {
   ultraviolet: 'Rewrites pages in a service worker and fetches them over your Wisp server. Needs `npm start`.',
   scramjet: 'Rewrites JavaScript at runtime for modern apps. Heavier than Ultraviolet, needs `npm start`.',
 };
+const NO_SERVER_TEXT =
+  'This copy of Cosmic is served as static files (for example GitHub Pages), so the Ultraviolet/Scramjet runtimes and the Wisp relay are not available. Deploy the repository to a Node host and start it with `npm start` to use them. Direct embed is being used instead.';
 
 // ---------------------------------------------------------------------------
 // Core objects
@@ -27,13 +29,12 @@ const store = createStore();
 const settings = store.settings;
 const wispUrl = () => settings.get().wisp?.trim() || defaultWispUrl();
 registerProxyRuntimes(wispUrl);
-const runtime = createRuntime(settings.get().runtime);
 const tabs = createTabManager();
-const nav = createNavigationManager({
-  tabs,
-  runtime,
-  onVisit: (entry) => store.history.add(entry),
-});
+
+/** Chosen at boot (see init): the configured runtime, or iframe when no server is behind the page. */
+let runtime = null;
+let nav = null;
+let serverMissing = false;
 
 /** `view` is either 'tab' (show the active tab's content) or a sidebar panel name. */
 let view = 'tab';
@@ -132,8 +133,11 @@ function renderPageState() {
   $('loadingText').textContent = displayUrl(tab.url);
   fallback.hidden = tab.status !== TAB_STATUS.ERROR;
   if (tab.status === TAB_STATUS.ERROR) {
-    $('fallbackTitle').textContent = 'This page can’t be shown here';
-    $('fallbackText').textContent = `${tab.error || 'The page failed to load.'} Some sites refuse to be embedded; you can open ${hostOf(tab.url)} in a new window instead.`;
+    const missingAsset = /Could not load \//.test(tab.error || '');
+    $('fallbackTitle').textContent = missingAsset ? 'The web runtime is not available' : 'This page can’t be shown here';
+    $('fallbackText').textContent = missingAsset
+      ? `${tab.error} Cosmic is running without its Node server, so proxy runtimes cannot start. Switch to Direct embed in Settings, or deploy with \`npm start\`. You can still open ${hostOf(tab.url)} in a new window.`
+      : `${tab.error || 'The page failed to load.'} Some sites refuse to be embedded; you can open ${hostOf(tab.url)} in a new window instead.`;
   }
   const label = { loading: 'Loading', ready: 'Ready', error: 'Failed to load', idle: 'Ready' }[tab.status] || 'Ready';
   setStatus(`${label} — ${displayUrl(tab.url)}`);
@@ -159,9 +163,16 @@ function renderClock() {
   $('clockDate').textContent = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
+function renderEngine() {
+  const engine = settings.get().engine;
+  $('engineSelect').value = SEARCH_ENGINES[engine] ? engine : 'duckduckgo';
+  $('homeInput').placeholder = `Search ${SEARCH_ENGINES[$('engineSelect').value].name} or type a URL`;
+}
+
 function renderHome() {
   $('greeting').textContent = greeting();
   renderClock();
+  renderEngine();
   const shortcuts = store.shortcuts.all().slice(0, HOME_SHORTCUT_LIMIT);
   $('homeShortcuts').innerHTML = shortcuts.length
     ? shortcuts.map((s, i) => appCard(s, i)).join('')
@@ -178,7 +189,7 @@ function renderHome() {
   $('ntpStatus').innerHTML = [
     `<span><b>${count}</b> open tab${count === 1 ? '' : 's'}</span>`,
     `<span><b>${store.saved.all().length}</b> saved</span>`,
-    `<span>${esc(runtime.name)}</span>`,
+    `<span>${esc(runtime.name)}${serverMissing ? ' (no server)' : ''}</span>`,
     `<span>${storage.isAvailable() ? 'Local storage on' : 'Storage unavailable'}</span>`,
   ].join('<i aria-hidden="true">·</i>');
 }
@@ -226,11 +237,14 @@ function renderSettings() {
   $$('input[name="sidebar"]').forEach((r) => (r.checked = r.value === s.sidebar));
   $$('input[name="startup"]').forEach((r) => (r.checked = r.value === s.startup));
   $$('input[name="runtime"]').forEach((r) => (r.checked = r.value === s.runtime));
+  $$('input[name="engine"]').forEach((r) => (r.checked = r.value === s.engine));
   $('clockToggle').checked = !!s.clock;
   $('wispInput').value = s.wisp || '';
   $('runtimeHint').textContent = RUNTIME_HINTS[s.runtime] || '';
-  $('runtimeName').textContent = runtime.name;
+  $('runtimeName').textContent = runtime.name + (serverMissing && s.runtime !== 'iframe' ? ' — fallback, no server found' : '');
   $('transportState').textContent = s.runtime === 'iframe' ? 'Not used' : transportState;
+  $('serverNotice').hidden = !serverMissing;
+  $('serverNoticeText').textContent = NO_SERVER_TEXT;
   $('storageState').textContent = storage.isAvailable() ? 'Available' : 'Unavailable';
 }
 
@@ -304,13 +318,18 @@ function requestRuntime(name) {
     renderSettings();
     return;
   }
+  if (name !== 'iframe' && serverMissing) {
+    toast('No Cosmic server behind this page — deploy with `npm start` to use proxy runtimes.', { duration: 6000 });
+    renderSettings();
+    return;
+  }
   settings.set({ runtime: name });
   toast('Switching web runtime — reloading Cosmic…');
   setTimeout(() => location.reload(), 700);
 }
 
 function startTransport() {
-  if (settings.get().runtime === 'iframe') return;
+  if (settings.get().runtime === 'iframe' || serverMissing) return;
   transportState = 'Connecting…';
   renderSettings();
   connectTransport(wispUrl()).then(
@@ -443,6 +462,11 @@ function bindSidebar() {
     })
   );
   $('brandHome').addEventListener('click', () => setView('home'));
+  $('sideNewTab').addEventListener('click', () => {
+    tabs.add();
+    showTab();
+    $('homeInput').focus();
+  });
   $('collapseBtn').addEventListener('click', () =>
     settings.set({ sidebar: settings.get().sidebar === 'compact' ? 'expanded' : 'compact' })
   );
@@ -491,6 +515,10 @@ function bindContent() {
     e.preventDefault();
     navigate($('homeInput').value);
     $('homeInput').value = '';
+  });
+  $('engineSelect').addEventListener('change', (e) => {
+    settings.set({ engine: e.target.value });
+    $('homeInput').focus();
   });
   bindAppsDragging();
 }
@@ -548,7 +576,7 @@ function bindPanels() {
     settings.reset();
     toast('Cosmic settings reset.');
   });
-  $$('input[name="theme"], input[name="sidebar"], input[name="startup"]').forEach((input) =>
+  $$('input[name="theme"], input[name="sidebar"], input[name="startup"], input[name="engine"]').forEach((input) =>
     input.addEventListener('change', () => settings.set({ [input.name]: input.value }))
   );
   $('clockToggle').addEventListener('change', (e) => settings.set({ clock: e.target.checked }));
@@ -568,7 +596,7 @@ function bindPanels() {
   $('shortcutForm').addEventListener('submit', (e) => {
     const data = new FormData(e.target);
     const url = resolveInput(String(data.get('url')));
-    if (!url || url.includes('duckduckgo.com/?q=')) {
+    if (!url || isSearchUrl(url)) {
       e.preventDefault();
       $('shortcutError').textContent = 'Enter a valid web address, e.g. example.com';
       $('shortcutError').hidden = false;
@@ -655,6 +683,7 @@ function bindState() {
   settings.onChange(() => {
     applySettings();
     if (!$('settingsView').hidden) renderSettings();
+    if (!$('homeView').hidden) renderEngine();
   });
 
   document.addEventListener('fullscreenchange', () => {
@@ -670,7 +699,21 @@ function bindState() {
 // ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
-function init() {
+async function chooseRuntime() {
+  const wanted = settings.get().runtime;
+  if (wanted === 'iframe') return createRuntime('iframe');
+  serverMissing = !(await probeServer());
+  return createRuntime(serverMissing ? 'iframe' : wanted);
+}
+
+async function init() {
+  runtime = await chooseRuntime();
+  nav = createNavigationManager({
+    tabs,
+    runtime,
+    onVisit: (entry) => store.history.add(entry),
+    getEngine: () => settings.get().engine,
+  });
   runtime.mount($('viewports'));
   bindTabs();
   bindToolbar();
@@ -686,6 +729,7 @@ function init() {
   startTransport();
   tabs.add();
   showTab();
+  if (serverMissing) toast('No Cosmic server found — using Direct embed. See Settings for details.', { duration: 7000 });
 
   // Small public surface for integrations and debugging.
   window.Cosmic = {

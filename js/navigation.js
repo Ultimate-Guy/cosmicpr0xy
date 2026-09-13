@@ -1,17 +1,29 @@
 import { TAB_STATUS } from './tabs.js';
 
-const SEARCH_URL = 'https://duckduckgo.com/?q=';
+export const SEARCH_ENGINES = {
+  duckduckgo: { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' },
+  google: { name: 'Google', url: 'https://www.google.com/search?q=' },
+  bing: { name: 'Bing', url: 'https://www.bing.com/search?q=' },
+  brave: { name: 'Brave', url: 'https://search.brave.com/search?q=' },
+};
+const DEFAULT_ENGINE = 'duckduckgo';
 const SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i;
 const HOSTNAME_RE = /^(localhost|[\w-]+(\.[\w-]+)+)(:\d+)?([/?#].*)?$/i;
 
 /** Turn free text into a navigable URL, or a search URL when it is not one. Returns '' for empty input. */
-export function resolveInput(raw) {
+export function resolveInput(raw, engine = DEFAULT_ENGINE) {
   const value = (raw || '').trim();
   if (!value) return '';
   if (/^https?:\/\//i.test(value)) return value;
   if (SCHEME_RE.test(value)) return /^(javascript|data|file):/i.test(value) ? '' : value;
   if (!/\s/.test(value) && HOSTNAME_RE.test(value)) return `https://${value}`;
-  return SEARCH_URL + encodeURIComponent(value);
+  const base = (SEARCH_ENGINES[engine] || SEARCH_ENGINES[DEFAULT_ENGINE]).url;
+  return base + encodeURIComponent(value);
+}
+
+/** True when `url` is a search-results page produced by resolveInput. */
+export function isSearchUrl(url) {
+  return Object.values(SEARCH_ENGINES).some((e) => url.startsWith(e.url));
 }
 
 export function displayUrl(url) {
@@ -31,7 +43,7 @@ export function hostOf(url) {
  * logical history stack so back/forward work even when the viewport cannot
  * expose its own history (cross-origin content).
  */
-export function createNavigationManager({ tabs, runtime, onVisit }) {
+export function createNavigationManager({ tabs, runtime, onVisit, getEngine = () => DEFAULT_ENGINE }) {
   runtime.on('load', ({ tabId, url }) => {
     const tab = tabs.get(tabId);
     if (!tab || tab.url !== url) return;
@@ -88,7 +100,7 @@ export function createNavigationManager({ tabs, runtime, onVisit }) {
     /** Navigate the tab to raw user input. Returns false when input is empty/invalid. */
     go(tabId, raw) {
       const tab = tabs.get(tabId);
-      const url = resolveInput(raw);
+      const url = resolveInput(raw, getEngine());
       if (!tab || !url) return false;
       push(tab, url);
       load(tab, url);

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: cosmic
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: WISP_DNS_ORDER
+        value: ipv4first
