@@ -39,6 +39,19 @@ export function proxySupported() {
   return 'serviceWorker' in navigator && window.isSecureContext;
 }
 
+/**
+ * Check whether the Cosmic Node server is behind this page. Static hosts
+ * (GitHub Pages, plain file servers) serve the UI but none of the proxy
+ * assets, so the probe distinguishes "no server" from a site that failed.
+ */
+let serverProbe = null;
+export function probeServer() {
+  serverProbe ??= fetch('/baremux/index.mjs', { method: 'HEAD', cache: 'no-store' })
+    .then((res) => res.ok && /javascript/.test(res.headers.get('content-type') || ''))
+    .catch(() => false);
+  return serverProbe;
+}
+
 const scripts = new Map();
 function loadScript(src) {
   if (!scripts.has(src)) {

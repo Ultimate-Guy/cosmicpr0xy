@@ -20,7 +20,7 @@
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   --radius: 8px;
   --radius-lg: 12px;
-  --sidebar-w: 176px;
+  --sidebar-w: 188px;
   --sidebar-w-compact: 60px;
   --topbar-h: 40px;
   --toolbar-h: 46px;
@@ -169,14 +169,42 @@ h2 {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 36px;
+  height: 52px;
   padding: 0 6px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   border-radius: var(--radius);
   white-space: nowrap;
+  text-align: left;
 }
 .brand:hover {
   background: var(--bg-panel-2);
+}
+.brand .logo {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  border-radius: 9px;
+}
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  overflow: hidden;
+  transition: opacity var(--ease);
+}
+.brand-sub {
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.2px;
+}
+.new-tab-nav {
+  margin-bottom: 6px;
+  border: 1px dashed var(--line-strong);
+  color: var(--text-2);
+}
+.new-tab-nav:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .logo {
   display: grid;
@@ -197,10 +225,14 @@ h2 {
   border-radius: 10px;
 }
 .brand-word {
-  font-size: 12px;
-  letter-spacing: 3px;
+  font-size: 17px;
+  letter-spacing: -0.3px;
   font-weight: 800;
   color: var(--text);
+  background: linear-gradient(90deg, #dfe5ff, var(--accent) 60%, var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .main-nav,
 .sidebar-bottom {
@@ -240,8 +272,12 @@ h2 {
   color: var(--text);
 }
 .nav.active {
-  background: var(--accent-soft);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 34%, var(--bg-panel-2)), var(--bg-panel-2));
   color: var(--text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.nav.active .nav-icon {
+  color: var(--accent);
 }
 .nav.active::before {
   content: "";
@@ -259,7 +295,7 @@ h2 {
 .collapse {
   color: var(--text-3);
 }
-.sidebar.collapsed .brand-word,
+.sidebar.collapsed .brand-text,
 .sidebar.collapsed .nav-label {
   opacity: 0;
   width: 0;
@@ -637,14 +673,137 @@ h2 {
 .ntp {
   position: relative;
   overflow: hidden;
-  padding: 26px 28px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 440px;
+  padding: 56px 28px 26px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background:
-    radial-gradient(ellipse 50% 80% at 85% 20%, rgba(127, 147, 255, 0.18), transparent 70%),
-    radial-gradient(ellipse 40% 70% at 10% 100%, rgba(180, 140, 255, 0.12), transparent 70%),
+    radial-gradient(ellipse 55% 60% at 50% -10%, rgba(127, 147, 255, 0.22), transparent 70%),
+    radial-gradient(ellipse 40% 50% at 8% 100%, rgba(180, 140, 255, 0.14), transparent 70%),
+    radial-gradient(ellipse 40% 50% at 95% 90%, rgba(90, 120, 255, 0.12), transparent 70%),
     var(--bg-panel);
   box-shadow: var(--shadow);
+}
+.ntp-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 26px;
+  text-align: center;
+}
+.logo.hero {
+  width: 56px;
+  height: 56px;
+  font-size: 28px;
+  border-radius: 16px;
+  margin-bottom: 8px;
+  box-shadow: 0 10px 40px rgba(110, 100, 240, 0.45);
+}
+.ntp-tagline {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.search-go {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 9px;
+  font-size: 16px;
+  color: #fff;
+  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+  transition: filter var(--ease), transform var(--ease);
+}
+.search-go:hover {
+  filter: brightness(1.1);
+  transform: translateX(1px);
+}
+.engine-select {
+  flex: none;
+  height: 30px;
+  padding: 0 6px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+.engine-select:hover {
+  color: var(--text);
+}
+.tile-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 720px;
+  margin-top: 26px;
+}
+.tile-row .card-wrap {
+  width: 78px;
+}
+.tile-row .card {
+  min-height: 0;
+  align-items: center;
+  gap: 0;
+  padding: 10px 6px 8px;
+  text-align: center;
+  background: color-mix(in srgb, var(--bg-panel-2) 70%, transparent);
+}
+.tile-row .card-icon {
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  border-radius: 10px;
+  margin-bottom: 7px;
+}
+.tile-row .card strong {
+  font-size: 11.5px;
+}
+.tile-row .card small {
+  display: none;
+}
+.tile-row .empty {
+  padding: 10px;
+}
+.ntp-links {
+  display: flex;
+  gap: 16px;
+  margin-top: 22px;
+}
+.link-btn {
+  font-size: 12px;
+  color: var(--text-3);
+  transition: color var(--ease);
+}
+.link-btn:hover {
+  color: var(--accent);
+}
+.notice {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 45%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.notice[hidden] {
+  display: none;
+}
+.notice-icon {
+  color: var(--accent-2);
+  flex: none;
 }
 .stars {
   position: absolute;
@@ -666,23 +825,20 @@ h2 {
 .ntp > *:not(.stars) {
   position: relative;
 }
-.ntp-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-.ntp-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .ntp-title {
-  font-size: 24px;
-  letter-spacing: -0.5px;
+  font-size: 46px;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #f0f3ff, var(--accent) 55%, var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-.ntp-clock {
+.ntp > .ntp-clock {
+  position: absolute;
+  top: 14px;
+  right: 18px;
   text-align: right;
 }
 .ntp-clock[hidden] {
@@ -690,7 +846,7 @@ h2 {
 }
 .clock-time {
   display: block;
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 650;
   letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
@@ -703,11 +859,14 @@ h2 {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 42px;
-  padding: 0 5px 0 12px;
+  width: 100%;
+  max-width: 640px;
+  height: 46px;
+  padding: 0 6px 0 8px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
-  background: var(--bg-input);
+  background: color-mix(in srgb, var(--bg-input) 92%, transparent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   transition: border-color var(--ease), box-shadow var(--ease);
 }
 .home-search:focus-within {
@@ -734,6 +893,7 @@ h2 {
 .ntp-status {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
   margin-top: 14px;
   font-size: 11.5px;
@@ -746,8 +906,10 @@ h2 {
 .ntp-status i {
   font-style: normal;
 }
-.startup-blank .ntp-head,
+.startup-blank .ntp-hero,
+.startup-blank .ntp-clock,
 .startup-blank .ntp-status,
+.startup-blank .ntp-links,
 .startup-blank .section-head,
 .startup-blank #homeShortcuts,
 .startup-blank .ntp-columns {
@@ -757,6 +919,7 @@ h2 {
   background: none;
   border: 0;
   box-shadow: none;
+  min-height: 0;
   padding: 18vh 0 0;
   max-width: 640px;
   margin: 0 auto;
@@ -1370,12 +1533,6 @@ body.focus .statusbar {
   .ntp-columns {
     grid-template-columns: 1fr;
   }
-  .ntp-head {
-    flex-direction: column;
-  }
-  .ntp-clock {
-    text-align: left;
-  }
 }
 @media (max-width: 640px) {
   :root {
@@ -1393,7 +1550,8 @@ body.focus .statusbar {
     border-right: 0;
     border-top: 1px solid var(--line);
   }
-  .sidebar .brand {
+  .sidebar .brand,
+  .sidebar .new-tab-nav {
     display: none;
   }
   .main-nav {
@@ -1430,13 +1588,27 @@ body.focus .statusbar {
     padding: 14px 14px 24px;
   }
   .ntp {
-    padding: 18px 16px 16px;
+    min-height: 0;
+    padding: 44px 14px 16px;
   }
   .ntp-title {
-    font-size: 20px;
+    font-size: 34px;
+  }
+  .ntp-clock {
+    top: 10px;
+    right: 12px;
   }
   .clock-time {
-    font-size: 22px;
+    font-size: 15px;
+  }
+  .clock-date {
+    display: none;
+  }
+  .engine-select {
+    display: none;
+  }
+  .tile-row .card-wrap {
+    width: 70px;
   }
   .card-grid,
   .card-grid.compact {

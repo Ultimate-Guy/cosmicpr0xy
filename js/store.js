@@ -24,6 +24,7 @@ export const DEFAULT_SETTINGS = {
   sidebar: 'expanded', // 'expanded' | 'compact'
   startup: 'cosmic', // 'cosmic' | 'blank'
   clock: true,
+  engine: 'duckduckgo', // key of SEARCH_ENGINES in navigation.js
   runtime: 'iframe', // 'iframe' | 'ultraviolet' | 'scramjet'
   wisp: '', // empty = the Wisp endpoint served next to this page
 };
