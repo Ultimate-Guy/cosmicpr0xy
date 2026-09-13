@@ -35,6 +35,8 @@ const tabs = createTabManager();
 let runtime = null;
 let nav = null;
 let serverMissing = false;
+/** Proxy runtime that was configured but could not start because no server was found. */
+let fallbackFrom = null;
 
 /** `view` is either 'tab' (show the active tab's content) or a sidebar panel name. */
 let view = 'tab';
@@ -241,7 +243,7 @@ function renderSettings() {
   $('clockToggle').checked = !!s.clock;
   $('wispInput').value = s.wisp || '';
   $('runtimeHint').textContent = RUNTIME_HINTS[s.runtime] || '';
-  $('runtimeName').textContent = runtime.name + (serverMissing && s.runtime !== 'iframe' ? ' — fallback, no server found' : '');
+  $('runtimeName').textContent = runtime.name + (fallbackFrom ? ` — fallback from ${fallbackFrom}, no server found` : '');
   $('transportState').textContent = s.runtime === 'iframe' ? 'Not used' : transportState;
   $('serverNotice').hidden = !serverMissing;
   $('serverNoticeText').textContent = NO_SERVER_TEXT;
@@ -311,13 +313,14 @@ function toggleFullscreen() {
 }
 
 /** Engines are chosen at boot, so switching one reloads Cosmic. */
-function requestRuntime(name) {
+async function requestRuntime(name) {
   if (name === settings.get().runtime) return;
   if (name !== 'iframe' && !proxySupported()) {
     toast('Proxy runtimes need a service worker: open Cosmic over https or localhost.', { duration: 5000 });
     renderSettings();
     return;
   }
+  if (name !== 'iframe') serverMissing = !(await probeServer());
   if (name !== 'iframe' && serverMissing) {
     toast('No Cosmic server behind this page — deploy with `npm start` to use proxy runtimes.', { duration: 6000 });
     renderSettings();
@@ -701,9 +704,11 @@ function bindState() {
 // ---------------------------------------------------------------------------
 async function chooseRuntime() {
   const wanted = settings.get().runtime;
-  if (wanted === 'iframe') return createRuntime('iframe');
   serverMissing = !(await probeServer());
-  return createRuntime(serverMissing ? 'iframe' : wanted);
+  if (!serverMissing || wanted === 'iframe') return createRuntime(wanted);
+  fallbackFrom = wanted;
+  settings.set({ runtime: 'iframe' });
+  return createRuntime('iframe');
 }
 
 async function init() {
@@ -729,7 +734,7 @@ async function init() {
   startTransport();
   tabs.add();
   showTab();
-  if (serverMissing) toast('No Cosmic server found — using Direct embed. See Settings for details.', { duration: 7000 });
+  if (fallbackFrom) toast('No Cosmic server found — using Direct embed. See Settings for details.', { duration: 7000 });
 
   // Small public surface for integrations and debugging.
   window.Cosmic = {
