@@ -24,7 +24,8 @@ export const DEFAULT_SETTINGS = {
   sidebar: 'expanded', // 'expanded' | 'compact'
   startup: 'cosmic', // 'cosmic' | 'blank'
   clock: true,
-  runtime: 'iframe',
+  runtime: 'iframe', // 'iframe' | 'ultraviolet' | 'scramjet'
+  wisp: '', // empty = the Wisp endpoint served next to this page
 };
 
 function createCollection(key, fallback) {

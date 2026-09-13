@@ -1,6 +1,7 @@
 import { storage } from './storage.js';
 import { createStore } from './store.js';
 import { createRuntime } from './runtime.js';
+import { registerProxyRuntimes, connectTransport, defaultWispUrl, proxySupported } from './runtime-proxy.js';
 import { createTabManager, TAB_STATUS } from './tabs.js';
 import { createNavigationManager, resolveInput, hostOf, displayUrl } from './navigation.js';
 import { esc, formatTime, dayLabel, emptyState, appCard, listRow, tabButton } from './render.js';
@@ -13,11 +14,19 @@ const HOME_RECENT_LIMIT = 6;
 const HOME_SAVED_LIMIT = 6;
 const HOME_SHORTCUT_LIMIT = 8;
 
+const RUNTIME_HINTS = {
+  iframe: 'Loads sites straight into a frame. Fast, but sites that refuse embedding will not open.',
+  ultraviolet: 'Rewrites pages in a service worker and fetches them over your Wisp server. Needs `npm start`.',
+  scramjet: 'Rewrites JavaScript at runtime for modern apps. Heavier than Ultraviolet, needs `npm start`.',
+};
+
 // ---------------------------------------------------------------------------
 // Core objects
 // ---------------------------------------------------------------------------
 const store = createStore();
 const settings = store.settings;
+const wispUrl = () => settings.get().wisp?.trim() || defaultWispUrl();
+registerProxyRuntimes(wispUrl);
 const runtime = createRuntime(settings.get().runtime);
 const tabs = createTabManager();
 const nav = createNavigationManager({
@@ -29,6 +38,7 @@ const nav = createNavigationManager({
 /** `view` is either 'tab' (show the active tab's content) or a sidebar panel name. */
 let view = 'tab';
 let toastTimer = null;
+let transportState = 'Not connected';
 
 // ---------------------------------------------------------------------------
 // Feedback helpers
@@ -215,8 +225,12 @@ function renderSettings() {
   $$('input[name="theme"]').forEach((r) => (r.checked = r.value === s.theme));
   $$('input[name="sidebar"]').forEach((r) => (r.checked = r.value === s.sidebar));
   $$('input[name="startup"]').forEach((r) => (r.checked = r.value === s.startup));
+  $$('input[name="runtime"]').forEach((r) => (r.checked = r.value === s.runtime));
   $('clockToggle').checked = !!s.clock;
+  $('wispInput').value = s.wisp || '';
+  $('runtimeHint').textContent = RUNTIME_HINTS[s.runtime] || '';
   $('runtimeName').textContent = runtime.name;
+  $('transportState').textContent = s.runtime === 'iframe' ? 'Not used' : transportState;
   $('storageState').textContent = storage.isAvailable() ? 'Available' : 'Unavailable';
 }
 
@@ -280,6 +294,36 @@ function toggleFullscreen() {
   if (!document.fullscreenEnabled) return toast('Fullscreen is not available here.');
   if (document.fullscreenElement) document.exitFullscreen();
   else document.documentElement.requestFullscreen().catch(() => toast('Fullscreen was blocked.'));
+}
+
+/** Engines are chosen at boot, so switching one reloads Cosmic. */
+function requestRuntime(name) {
+  if (name === settings.get().runtime) return;
+  if (name !== 'iframe' && !proxySupported()) {
+    toast('Proxy runtimes need a service worker: open Cosmic over https or localhost.', { duration: 5000 });
+    renderSettings();
+    return;
+  }
+  settings.set({ runtime: name });
+  toast('Switching web runtime — reloading Cosmic…');
+  setTimeout(() => location.reload(), 700);
+}
+
+function startTransport() {
+  if (settings.get().runtime === 'iframe') return;
+  transportState = 'Connecting…';
+  renderSettings();
+  connectTransport(wispUrl()).then(
+    () => {
+      transportState = `Connected — ${wispUrl()}`;
+      if (!$('settingsView').hidden) renderSettings();
+    },
+    (err) => {
+      transportState = `Failed — ${err.message || 'transport unavailable'}`;
+      toast(`Proxy transport unavailable: ${err.message || 'unknown error'}`, { duration: 6000 });
+      if (!$('settingsView').hidden) renderSettings();
+    }
+  );
 }
 
 function openShortcutDialog() {
@@ -508,6 +552,16 @@ function bindPanels() {
     input.addEventListener('change', () => settings.set({ [input.name]: input.value }))
   );
   $('clockToggle').addEventListener('change', (e) => settings.set({ clock: e.target.checked }));
+  $$('input[name="runtime"]').forEach((input) =>
+    input.addEventListener('change', () => requestRuntime(input.value))
+  );
+  $('wispInput').addEventListener('change', (e) => {
+    settings.set({ wisp: e.target.value.trim() });
+    if (settings.get().runtime !== 'iframe') {
+      toast('Wisp endpoint saved — reloading Cosmic…');
+      setTimeout(() => location.reload(), 700);
+    }
+  });
 
   const dialog = $('shortcutDialog');
   $('shortcutCancel').addEventListener('click', () => dialog.close());
@@ -629,6 +683,7 @@ function init() {
   renderApps();
   renderSaved();
   renderHistory();
+  startTransport();
   tabs.add();
   showTab();
 

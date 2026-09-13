@@ -44,6 +44,15 @@ export function createNavigationManager({ tabs, runtime, onVisit }) {
     tabs.update(tabId, { status: TAB_STATUS.ERROR, error: message });
   });
 
+  // Proxy runtimes can see the page navigate itself; mirror it into tab state.
+  runtime.on('navigate', ({ tabId, url }) => {
+    const tab = tabs.get(tabId);
+    if (!tab || !url || tab.url === url) return;
+    tabs.update(tabId, { url, title: hostOf(url), status: TAB_STATUS.READY, error: '' });
+    push(tabs.get(tabId), url);
+    onVisit?.({ url, title: hostOf(url), time: Date.now() });
+  });
+
   runtime.on('title', ({ tabId, url, title }) => {
     const tab = tabs.get(tabId);
     if (!tab || tab.url !== url || !title) return;

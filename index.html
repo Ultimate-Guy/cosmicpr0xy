@@ -235,14 +235,25 @@
                   <button class="subtle-btn danger" type="button" id="resetSettings">Reset Cosmic settings</button>
                 </div>
               </fieldset>
-              <fieldset class="setting">
-                <legend>Runtime</legend>
+              <fieldset class="setting wide">
+                <legend>Web runtime</legend>
+                <div class="choice-row" role="radiogroup" aria-label="Web runtime">
+                  <label class="choice"><input type="radio" name="runtime" value="iframe" /><span>Direct embed</span></label>
+                  <label class="choice"><input type="radio" name="runtime" value="ultraviolet" /><span>Ultraviolet</span></label>
+                  <label class="choice"><input type="radio" name="runtime" value="scramjet" /><span>Scramjet</span></label>
+                </div>
+                <p class="muted" id="runtimeHint"></p>
+                <label class="field">
+                  <span>Wisp endpoint</span>
+                  <input id="wispInput" type="text" spellcheck="false" autocomplete="off" placeholder="wss://your-host/wisp/" />
+                </label>
+                <p class="muted">Leave empty to use the Wisp server bundled with <code>npm start</code>.</p>
                 <dl class="kv">
                   <dt>Adapter</dt><dd id="runtimeName"></dd>
+                  <dt>Transport</dt><dd id="transportState">Not connected</dd>
                   <dt>Storage</dt><dd id="storageState"></dd>
-                  <dt>Version</dt><dd>Cosmic 2.0</dd>
+                  <dt>Version</dt><dd>Cosmic 3.0</dd>
                 </dl>
-                <p class="muted">The UI talks to a runtime adapter; see README for connecting your own web runtime.</p>
               </fieldset>
             </div>
           </section>

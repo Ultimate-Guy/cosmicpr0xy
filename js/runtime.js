@@ -19,17 +19,21 @@
  *   reload(tabId: string)              Reload the current document.
  *   back(tabId: string): boolean       Go back inside the viewport when possible.
  *   forward(tabId: string): boolean    Go forward inside the viewport when possible.
- *   on(event, handler)                 Subscribe: 'load' | 'error' | 'title'.
+ *   on(event, handler)                 Subscribe: 'load' | 'error' | 'title' | 'navigate'.
  *                                      Handlers receive ({ tabId, url, title?, message? }).
+ *
+ * 'navigate' is emitted when the page itself moved somewhere else (a link
+ * click inside the viewport). Adapters that cannot observe in-viewport
+ * navigation simply never emit it.
  *
  * Adapters may resolve an outbound URL differently (e.g. rewrite it for a
  * transport you control) but must report the *logical* URL in events.
  */
 
-const LOAD_TIMEOUT_MS = 20000;
+export const LOAD_TIMEOUT_MS = 20000;
 
-function createEmitter() {
-  const handlers = { load: [], error: [], title: [] };
+export function createEmitter() {
+  const handlers = { load: [], error: [], title: [], navigate: [] };
   return {
     on(event, fn) {
       if (handlers[event]) handlers[event].push(fn);
