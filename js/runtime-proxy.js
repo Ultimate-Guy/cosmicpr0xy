@@ -1,24 +1,9 @@
 /**
  * Service-worker runtimes: Ultraviolet and Scramjet.
  *
- * How these differ from the iframe runtime: the iframe runtime asks the
- * browser to load the target origin directly, so the target's headers decide
- * whether anything renders at all (`X-Frame-Options`, CSP, SameSite cookies),
- * and the page stays opaque to us. Ultraviolet and Scramjet instead register a
- * service worker on *this* origin and rewrite the page:
- *
- *   page asks for https://site/x
- *     → rewritten to <origin>/service/<engine>/<encoded https://site/x>
- *     → service worker intercepts, fetches over the Wisp transport (server/index.js)
- *     → response headers are stripped/rewritten, HTML/CSS/JS rewritten
- *     → the document runs same-origin, so titles and in-page navigation are visible
- *
- * Ultraviolet rewrites documents and scripts ahead of execution; Scramjet
- * rewrites JavaScript at runtime (proxied `window`/`location`, dynamic `eval`),
- * which is slower to start but survives modern single-page apps.
- *
- * Both require `npm start` (the static UI alone cannot proxy anything) and a
- * Wisp endpoint you host.
+ * Both runtimes are started on the Render-hosted Cosmic origin. The browser
+ * registers Cosmic's root service worker, connects BareMux to Epoxy/Wisp,
+ * then creates the selected runtime's browsing frame.
  */
 import { registerRuntime, createEmitter, LOAD_TIMEOUT_MS } from './runtime.js';
 
@@ -40,14 +25,23 @@ export function proxySupported() {
 }
 
 /**
- * Check whether the Cosmic Node server is behind this page. Static hosts
- * (GitHub Pages, plain file servers) serve the UI but none of the proxy
- * assets, so the probe distinguishes "no server" from a site that failed.
+ * Verify that the Render Node server is actually serving the runtime assets.
+ * A static copy of Cosmic can still return HTTP 200 for the homepage, so one
+ * homepage request is not enough to prove that the proxy backend exists.
  */
 let serverProbe = null;
 export function probeServer() {
-  serverProbe ??= fetch('/baremux/index.mjs', { method: 'HEAD', cache: 'no-store' })
-    .then((res) => res.ok && /javascript/.test(res.headers.get('content-type') || ''))
+  serverProbe ??= Promise.all([
+    '/sw.js',
+    '/baremux/index.mjs',
+    '/epoxy/index.mjs',
+    '/uv/uv.bundle.js',
+    '/scram/scramjet.all.js',
+  ].map(async (path) => {
+    const res = await fetch(path, { method: 'HEAD', cache: 'no-store' });
+    return res.ok;
+  }))
+    .then((results) => results.every(Boolean))
     .catch(() => false);
   return serverProbe;
 }
@@ -62,7 +56,7 @@ function loadScript(src) {
         el.src = src;
         el.async = false;
         el.onload = () => resolve();
-        el.onerror = () => reject(new Error(`Could not load ${src}. Is the Cosmic server running?`));
+        el.onerror = () => reject(new Error(`Could not load ${src}. Check the Render deployment and runtime assets.`));
         document.head.appendChild(el);
       })
     );
@@ -74,39 +68,44 @@ let transportPromise = null;
 let transportWisp = '';
 
 /**
- * Register the service worker and point bare-mux at the Epoxy/Wisp transport.
- * Shared by both engines and only performed once per Wisp endpoint.
+ * Register the root service worker and configure the shared BareMux →
+ * Epoxy → Wisp transport. Both proxy engines use the same connection.
  */
-export function connectTransport(wispUrl = defaultWispUrl()) {
+export async function connectTransport(wispUrl = defaultWispUrl()) {
   if (transportPromise && transportWisp === wispUrl) return transportPromise;
+
   transportWisp = wispUrl;
   transportPromise = (async () => {
     if (!proxySupported()) {
       throw new Error('Proxy runtimes need a service worker: use https or localhost.');
     }
-    await navigator.serviceWorker.register(SW_PATH, { scope: '/' });
+
+    const registration = await navigator.serviceWorker.register(SW_PATH, {
+      scope: '/',
+      updateViaCache: 'none',
+    });
     await navigator.serviceWorker.ready;
+
+    // A freshly-installed worker may not have controlled the top-level page
+    // yet. That is fine for startup: the proxied iframe is a new navigation
+    // under / and will be controlled by the active worker.
+    if (!registration.active) {
+      throw new Error('Cosmic service worker did not become active.');
+    }
+
     const { BareMuxConnection } = await import('/baremux/index.mjs');
     const connection = new BareMuxConnection('/baremux/worker.js');
     await connection.setTransport('/epoxy/index.mjs', [{ wisp: wispUrl }]);
+
+    return { registration, connection, wispUrl };
   })();
+
   transportPromise.catch(() => {
     transportPromise = null;
   });
   return transportPromise;
 }
 
-/**
- * Shared plumbing for frame-backed runtimes: one viewport per tab, load
- * timeouts, visibility, and event fan-out. `engine` supplies the parts that
- * differ between Ultraviolet and Scramjet.
- *
- * engine: {
- *   name, init(wispUrl), createFrame(), destroyFrame(handle),
- *   go(handle, url), back(handle), forward(handle), reload(handle),
- *   watch(handle, { onNavigate, onLoad })
- * }
- */
 function createFrameRuntime(engine, wispUrl) {
   const emitter = createEmitter();
   const tabsFrames = new Map();
@@ -132,9 +131,7 @@ function createFrameRuntime(engine, wispUrl) {
     name: engine.name,
     mount(el) {
       container = el;
-      start().catch(() => {
-        /* surfaced per-tab on the first load */
-      });
+      start().catch(() => {});
     },
     open(tabId) {
       if (tabsFrames.has(tabId)) return;
@@ -228,7 +225,6 @@ function createFrameRuntime(engine, wispUrl) {
   };
 }
 
-/** Read the real URL and title out of a proxied (same-origin) frame. */
 function readFrame(el, decodePath) {
   try {
     const { pathname, search, hash } = el.contentWindow.location;
@@ -260,7 +256,8 @@ export function createUltravioletRuntime(wispUrl) {
       createFrame: () => ({ el: document.createElement('iframe') }),
       destroyFrame: (handle) => handle.el.remove(),
       go(handle, url) {
-        handle.el.src = UV_PREFIX + self.__uv$config.encodeUrl(url);
+        const encoded = self.__uv$config.encodeUrl(url);
+        handle.el.src = UV_PREFIX + encoded;
       },
       back: (handle) => handle.el.contentWindow?.history.back(),
       forward: (handle) => handle.el.contentWindow?.history.forward(),
@@ -286,7 +283,13 @@ export function createScramjetRuntime(wispUrl) {
       async init(wisp) {
         await loadScript('/scram/scramjet.all.js');
         await connectTransport(wisp);
+        if (typeof window.$scramjetLoadController !== 'function') {
+          throw new Error('Scramjet controller failed to load from /scram/scramjet.all.js.');
+        }
         const { ScramjetController } = window.$scramjetLoadController();
+        if (typeof ScramjetController !== 'function') {
+          throw new Error('ScramjetController is missing from the loaded runtime.');
+        }
         controller = new ScramjetController({
           prefix: SCRAM_PREFIX,
           files: {
@@ -316,9 +319,7 @@ export function createScramjetRuntime(wispUrl) {
           try {
             url = String(handle.frame.url || '');
             title = handle.el.contentDocument?.title || '';
-          } catch {
-            /* not readable yet */
-          }
+          } catch {}
           if (url) onNavigate(url);
           onLoad(url, title);
         });
@@ -328,7 +329,6 @@ export function createScramjetRuntime(wispUrl) {
   );
 }
 
-/** Register both engines so `createRuntime(name)` can build them. */
 export function registerProxyRuntimes(getWispUrl = defaultWispUrl) {
   registerRuntime('ultraviolet', () => createUltravioletRuntime(getWispUrl()));
   registerRuntime('scramjet', () => createScramjetRuntime(getWispUrl()));
